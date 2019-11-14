@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:google-spreadsheets="http://www.mulesoft.org/schema/mule/google-spreadsheets" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/google-spreadsheets http://www.mulesoft.org/schema/mule/google-spreadsheets/current/mule-google-spreadsheets.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <google-spreadsheets:config-with-oauth name="Google_Spreadsheets" consumerKey="999144239156-fsiag3ajjlobhf42u3knfilgksugqhmd.apps.googleusercontent.com" consumerSecret="S8VfgJ-nEbONJSCpNfIT2RJu" doc:name="Google Spreadsheets">
+        <google-spreadsheets:oauth-callback-config domain="localhost" localPort="3000" remotePort="3000" path="call"/>
+    </google-spreadsheets:config-with-oauth>
+    <flow name="mule4Flow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/authorize" doc:name="HTTP"/>
+        <google-spreadsheets:authorize config-ref="Google_Spreadsheets" doc:name="Google Spreadsheets"/>
+        <logger message="You request has been authorized" level="INFO" doc:name="Logger"/>
+        <google-spreadsheets:get-all-cells-as-csv config-ref="Google_Spreadsheets" spreadsheet="Employee" worksheet="Employee" accessTokenId="#[flowVars['OAuthAccessTokenId']]" doc:name="Google Spreadsheets"/>
+        <file:outbound-endpoint path="src/test/resources/out" responseTimeout="10000" doc:name="File"/>
+    </flow>
+</mule>
